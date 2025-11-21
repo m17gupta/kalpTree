@@ -2,4 +2,4 @@
 import NextAuth from "next-auth";
 import { authConfig } from "@/lib/auth/auth-config";
 
-export default NextAuth(authConfig as any);
+export default NextAuth(authConfig);

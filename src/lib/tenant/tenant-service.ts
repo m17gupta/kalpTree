@@ -116,7 +116,7 @@ export class TenantService {
     status?: Tenant['status'];
   }): Promise<Tenant[]> {
     const collection = await this.getCollection();
-    const query: any = {};
+    const query: Partial<Pick<Tenant, 'status'>> = {};
     if (options?.status) {
       query.status = options.status;
     }

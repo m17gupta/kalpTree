@@ -12,12 +12,19 @@ export async function getSession() {
 /**
  * Throws if there is no authenticated user.
  */
-export async function requireAuth(): Promise<any> {
+export async function requireAuth() {
   const session = await getSession();
   if (!session || !("user" in session) || !session.user) {
     throw new Error("Unauthorized - Please sign in");
   }
-  return session.user as any;
+  return session.user as {
+    id: string;
+    email: string;
+    name: string;
+    tenantId: string;
+    tenantSlug: string;
+    role: string;
+  };
 }
 
 /**

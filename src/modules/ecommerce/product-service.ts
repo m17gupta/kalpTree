@@ -5,7 +5,7 @@ import type { Product, ProductCategory } from './types';
 export class ProductService {
   private async getCollection() {
     const db = await getDatabase();
-    return db.collection<Product>('products');
+    return db.collection<Product>("products");
   }
 
   async getProduct(
@@ -46,12 +46,12 @@ export class ProductService {
   ): Promise<Product[]> {
     const collection = await this.getCollection();
     const tid = typeof tenantId === 'string' ? new ObjectId(tenantId) : tenantId;
-    const query: any = { tenantId: tid };
+    const query: Partial<Product> & { tenantId: ObjectId } = { tenantId: tid };
     if (filters?.productType) {
       query.productType = filters.productType;
     }
     if (filters?.categoryId) {
-      query.categoryIds = filters.categoryId;
+      (query as unknown as { categoryIds: string[] }).categoryIds = [filters.categoryId];
     }
     if (filters?.status) {
       query.status = filters.status;
