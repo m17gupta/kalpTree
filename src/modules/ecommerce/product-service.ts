@@ -49,7 +49,8 @@ export class ProductService {
     const tid = typeof tenantId === 'string' ? new ObjectId(tenantId) : tenantId;
     const query: Partial<Product> & { tenantId: ObjectId } = { tenantId: tid };
     if (filters?.websiteId) {
-      (query as any).websiteId = typeof filters.websiteId === 'string' ? new ObjectId(filters.websiteId) : filters.websiteId;
+      const wid = typeof filters.websiteId === 'string' ? new ObjectId(filters.websiteId) : filters.websiteId;
+      (query as any).$or = [{ websiteId: wid }, { websiteId: { $exists: false } }];
     }
     if (filters?.productType) {
       query.productType = filters.productType;

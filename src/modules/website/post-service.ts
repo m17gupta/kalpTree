@@ -19,7 +19,7 @@ export class PostService {
     const tid = typeof tenantId === 'string' ? new ObjectId(tenantId) : tenantId;
     const wid = opts?.websiteId ? (typeof opts.websiteId === 'string' ? new ObjectId(opts.websiteId) : opts.websiteId) : undefined;
     const query: Partial<Post> & { tenantId: ObjectId } = { tenantId: tid };
-    if (wid) (query as any).websiteId = wid;
+    if (wid) (query as any).$or = [{ websiteId: wid }, { websiteId: { $exists: false } }];
     if (opts?.status) query.status = opts.status;
     if (opts?.tag) query.tags = { $in: [opts.tag] } as unknown as Post['tags'];
     return col.find(query).skip(opts?.skip || 0).limit(opts?.limit || 50).sort({ createdAt: -1 }).toArray();
