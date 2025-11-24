@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { cookies } from 'next/headers';
 import { auth } from "@/auth";
 import { pageService } from "@/modules/website/page-service";
 import type { Page } from "@/modules/website/types";
@@ -32,7 +33,9 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const skip = toNumber(searchParams.get("skip"), 0, 0, 10000);
   const limit = toNumber(searchParams.get("limit"), 20, 1, 100);
-  const items = await pageService.listPages(session.user.tenantId as string);
+  const cookieStore = cookies();
+  const websiteId = cookieStore.get('current_website_id')?.value;
+  const items = await pageService.listPages(session.user.tenantId as string, websiteId);
   const paged = items.slice(skip, skip + limit);
   return NextResponse.json({ items: paged, meta: { total: items.length, skip, limit, hasMore: skip + limit < items.length } });
 }
@@ -43,6 +46,7 @@ export async function POST(req: Request) {
   const json = await req.json();
   const parsed = createSchema.safeParse(json);
   if (!parsed.success) return NextResponse.json({ error: "Invalid payload", issues: parsed.error.flatten() }, { status: 400 });
-  const created = await pageService.createPage(session.user.tenantId as string, parsed.data as Omit<Page, keyof import("@/types").BaseDocument>);
+  const websiteId = cookies().get('current_website_id')?.value;
+  const created = await pageService.createPage(session.user.tenantId as string, parsed.data as Omit<Page, keyof import("@/types").BaseDocument>, websiteId);
   return NextResponse.json(created, { status: 201 });
 }

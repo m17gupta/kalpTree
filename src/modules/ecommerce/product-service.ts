@@ -42,11 +42,15 @@ export class ProductService {
       status?: Product['status'];
       skip?: number;
       limit?: number;
+      websiteId?: string | ObjectId;
     }
   ): Promise<Product[]> {
     const collection = await this.getCollection();
     const tid = typeof tenantId === 'string' ? new ObjectId(tenantId) : tenantId;
     const query: Partial<Product> & { tenantId: ObjectId } = { tenantId: tid };
+    if (filters?.websiteId) {
+      (query as any).websiteId = typeof filters.websiteId === 'string' ? new ObjectId(filters.websiteId) : filters.websiteId;
+    }
     if (filters?.productType) {
       query.productType = filters.productType;
     }
@@ -66,13 +70,16 @@ export class ProductService {
 
   async createProduct(
     tenantId: string | ObjectId,
-    data: Omit<Product, keyof import('@/types').BaseDocument>
+    data: Omit<Product, keyof import('@/types').BaseDocument>,
+    websiteId?: string | ObjectId,
   ): Promise<Product> {
     const collection = await this.getCollection();
     const tid = typeof tenantId === 'string' ? new ObjectId(tenantId) : tenantId;
+    const wid = websiteId ? (typeof websiteId === 'string' ? new ObjectId(websiteId) : websiteId) : undefined;
     const product: Omit<Product, '_id'> = {
       ...data,
       tenantId: tid,
+      ...(wid ? { websiteId: wid } : {}),
       createdAt: new Date(),
       updatedAt: new Date(),
     };

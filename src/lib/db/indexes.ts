@@ -15,17 +15,17 @@ export async function ensureIndexes() {
     db.collection('websites').createIndex({ systemSubdomain: 1 }, { unique: true, name: 'uniq_websites_sys_sub' }),
     db.collection('websites').createIndex({ primaryDomain: 1 }, { unique: true, sparse: true, name: 'uniq_websites_primary_domain' }),
 
-    // Website Content
-    db.collection('pages').createIndex({ tenantId: 1, slug: 1 }, { unique: true, name: 'uniq_pages_tenant_slug' }),
-    db.collection('posts').createIndex({ tenantId: 1, slug: 1 }, { unique: true, name: 'uniq_posts_tenant_slug' }),
-    db.collection('categories').createIndex({ tenantId: 1, slug: 1 }, { unique: true, name: 'uniq_categories_tenant_slug' }),
-    db.collection('blog_tags').createIndex({ tenantId: 1, slug: 1 }, { unique: true, name: 'uniq_blog_tags_tenant_slug' }),
+    // Website Content (scoped by tenant+website)
+    db.collection('pages').createIndex({ tenantId: 1, websiteId: 1, slug: 1 }, { unique: true, name: 'uniq_pages_tenant_website_slug' }),
+    db.collection('posts').createIndex({ tenantId: 1, websiteId: 1, slug: 1 }, { unique: true, name: 'uniq_posts_tenant_website_slug' }),
+    db.collection('categories').createIndex({ tenantId: 1, websiteId: 1, slug: 1 }, { unique: true, name: 'uniq_categories_tenant_website_slug' }),
+    db.collection('blog_tags').createIndex({ tenantId: 1, websiteId: 1, slug: 1 }, { unique: true, name: 'uniq_blog_tags_tenant_website_slug' }),
     db.collection('media').createIndex({ tenantId: 1, filename: 1 }, { name: 'media_tenant_filename' }),
     db.collection('media_folders').createIndex({ tenantId: 1, slug: 1 }, { unique: true, name: 'uniq_media_folders_tenant_slug' }),
 
-    // Ecommerce
-    db.collection('products').createIndex({ tenantId: 1, slug: 1 }, { unique: true, name: 'uniq_products_tenant_slug' }),
-    db.collection('products').createIndex({ tenantId: 1, status: 1 }, { name: 'products_tenant_status' }),
+    // Ecommerce (scoped by tenant+website)
+    db.collection('products').createIndex({ tenantId: 1, websiteId: 1, slug: 1 }, { unique: true, name: 'uniq_products_tenant_website_slug' }),
+    db.collection('products').createIndex({ tenantId: 1, websiteId: 1, status: 1 }, { name: 'products_tenant_website_status' }),
     // Text index (Mongo allows only one text index per collection). Ignore if already exists differently.
     (async () => {
       try {

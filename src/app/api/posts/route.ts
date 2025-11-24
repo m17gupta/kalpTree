@@ -37,7 +37,8 @@ export async function GET(req: Request) {
   const tag = searchParams.get("tag") || undefined;
   const skip = toNumber(searchParams.get("skip"), 0, 0, 10000);
   const limit = toNumber(searchParams.get("limit"), 20, 1, 100);
-  const items = await postService.list(session.user.tenantId as string, { status, tag, skip, limit });
+  const websiteId = (await import('next/headers')).cookies().get('current_website_id')?.value;
+  const items = await postService.list(session.user.tenantId as string, { status, tag, skip, limit, websiteId });
   return NextResponse.json({ items, meta: { total: items.length, skip, limit, hasMore: items.length === limit } });
 }
 
@@ -47,12 +48,17 @@ export async function POST(req: Request) {
   const json = await req.json();
   const parsed = createSchema.safeParse(json);
   if (!parsed.success) return NextResponse.json({ error: "Invalid payload", issues: parsed.error.flatten() }, { status: 400 });
-  const created = await postService.create(session.user.tenantId as string, {
-    ...(parsed.data as Omit<Post, '_id' | 'tenantId' | 'createdAt' | 'updatedAt' | 'author'>),
-    author: {
-      userId: String((session.user as { id?: string } | undefined)?.id ?? "admin"),
-      name: String((session.user as { name?: string } | undefined)?.name ?? "Admin"),
+  const websiteId = (await import('next/headers')).cookies().get('current_website_id')?.value;
+  const created = await postService.create(
+    session.user.tenantId as string,
+    {
+      ...(parsed.data as Omit<Post, '_id' | 'tenantId' | 'createdAt' | 'updatedAt' | 'author'>),
+      author: {
+        userId: String((session.user as { id?: string } | undefined)?.id ?? "admin"),
+        name: String((session.user as { name?: string } | undefined)?.name ?? "Admin"),
+      },
     },
-  });
+    websiteId,
+  );
   return NextResponse.json(created, { status: 201 });
 }
