@@ -1,4 +1,6 @@
 import { ObjectId } from 'mongodb';
+import { Filter } from 'mongodb';
+
 import { getDatabase } from '@/lib/db/mongodb';
 import type { Post } from './types';
 
@@ -12,6 +14,33 @@ export class PostService {
     const col = await this.getCollection();
     const tid = typeof tenantId === 'string' ? new ObjectId(tenantId) : tenantId;
     return col.findOne({ tenantId: tid, slug, status: 'published' });
+  }
+
+  async getBySlugForWebsite(
+    tenantId: string | ObjectId,
+    slug: string,
+    websiteId?: string | ObjectId,
+  ): Promise<Post | null> {
+    const col = await this.getCollection();
+    const tid = typeof tenantId === 'string' ? new ObjectId(tenantId) : tenantId;
+    const wid = websiteId ? (typeof websiteId === 'string' ? new ObjectId(websiteId) : websiteId) : undefined;
+    const query: Filter<Post> = { tenantId: tid, slug, status: 'published' } as any;
+    if (wid) (query as any).$or = [{ websiteId: wid }, { websiteId: { $exists: false } }];
+    return col.findOne(query);
+  }
+
+  async getById(
+    tenantId: string | ObjectId,
+    id: string | ObjectId,
+    websiteId?: string | ObjectId,
+  ): Promise<Post | null> {
+    const col = await this.getCollection();
+    const tid = typeof tenantId === 'string' ? new ObjectId(tenantId) : tenantId;
+    const oid = typeof id === 'string' ? new ObjectId(id) : id;
+    const wid = websiteId ? (typeof websiteId === 'string' ? new ObjectId(websiteId) : websiteId) : undefined;
+    const query: Filter<Post> = { _id: oid, tenantId: tid } as any;
+    if (wid) (query as any).$or = [{ websiteId: wid }, { websiteId: { $exists: false } }];
+    return col.findOne(query);
   }
 
   async list(tenantId: string | ObjectId, opts?: { status?: Post['status']; tag?: string; skip?: number; limit?: number; websiteId?: string | ObjectId }): Promise<Post[]> {
