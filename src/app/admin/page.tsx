@@ -1,9 +1,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 
+import { cookies } from "next/headers";
+
 async function fetchCount(path: string) {
   try {
-    const res = await fetch(path, { cache: "no-store" });
+    const cookie = cookies().toString();
+    const res = await fetch(path, { cache: "no-store", headers: { cookie } });
     if (!res.ok) return 0;
     const data = await res.json();
     const items = Array.isArray(data) ? data : data.items;

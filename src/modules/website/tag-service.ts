@@ -16,16 +16,20 @@ export class BlogTagService {
     return db.collection<BlogTag>('blog_tags');
   }
 
-  async list(tenantId: string | ObjectId) {
+  async list(tenantId: string | ObjectId, websiteId?: string | ObjectId) {
     const col = await this.getCollection();
     const tid = typeof tenantId === 'string' ? new ObjectId(tenantId) : tenantId;
-    return col.find({ tenantId: tid }).sort({ name: 1 }).toArray();
+    const wid = websiteId ? (typeof websiteId === 'string' ? new ObjectId(websiteId) : websiteId) : undefined;
+    const query: any = { tenantId: tid };
+    if (wid) query.websiteId = wid;
+    return col.find(query).sort({ name: 1 }).toArray();
   }
 
-  async create(tenantId: string | ObjectId, data: Omit<BlogTag, '_id' | 'tenantId' | 'createdAt' | 'updatedAt'>): Promise<BlogTag> {
+  async create(tenantId: string | ObjectId, data: Omit<BlogTag, '_id' | 'tenantId' | 'createdAt' | 'updatedAt'>, websiteId?: string | ObjectId): Promise<BlogTag> {
     const col = await this.getCollection();
     const tid = typeof tenantId === 'string' ? new ObjectId(tenantId) : tenantId;
-    const doc: Omit<BlogTag, '_id'> = { ...data, tenantId: tid, createdAt: new Date(), updatedAt: new Date() };
+    const wid = websiteId ? (typeof websiteId === 'string' ? new ObjectId(websiteId) : websiteId) : undefined;
+    const doc: Omit<BlogTag, '_id'> = { ...data, tenantId: tid, ...(wid ? { websiteId: wid } : {}), createdAt: new Date(), updatedAt: new Date() };
     const r = await col.insertOne(doc as BlogTag);
     return { ...doc, _id: r.insertedId } as BlogTag;
   }

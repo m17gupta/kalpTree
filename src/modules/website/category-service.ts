@@ -14,16 +14,20 @@ export class WebsiteCategoryService {
     return col.findOne({ tenantId: tid, slug });
   }
 
-  async list(tenantId: string | ObjectId): Promise<Category[]> {
+  async list(tenantId: string | ObjectId, websiteId?: string | ObjectId): Promise<Category[]> {
     const col = await this.getCollection();
     const tid = typeof tenantId === 'string' ? new ObjectId(tenantId) : tenantId;
-    return col.find({ tenantId: tid }).sort({ name: 1 }).toArray();
+    const wid = websiteId ? (typeof websiteId === 'string' ? new ObjectId(websiteId) : websiteId) : undefined;
+    const query: any = { tenantId: tid };
+    if (wid) query.websiteId = wid;
+    return col.find(query).sort({ name: 1 }).toArray();
   }
 
-  async create(tenantId: string | ObjectId, data: Omit<Category, '_id' | 'tenantId' | 'createdAt' | 'updatedAt'>): Promise<Category> {
+  async create(tenantId: string | ObjectId, data: Omit<Category, '_id' | 'tenantId' | 'createdAt' | 'updatedAt'>, websiteId?: string | ObjectId): Promise<Category> {
     const col = await this.getCollection();
     const tid = typeof tenantId === 'string' ? new ObjectId(tenantId) : tenantId;
-    const doc: Omit<Category, '_id'> = { ...data, tenantId: tid, createdAt: new Date(), updatedAt: new Date() };
+    const wid = websiteId ? (typeof websiteId === 'string' ? new ObjectId(websiteId) : websiteId) : undefined;
+    const doc: Omit<Category, '_id'> = { ...data, tenantId: tid, ...(wid ? { websiteId: wid } : {}), createdAt: new Date(), updatedAt: new Date() };
     const r = await col.insertOne(doc as Category);
     return { ...doc, _id: r.insertedId } as Category;
   }

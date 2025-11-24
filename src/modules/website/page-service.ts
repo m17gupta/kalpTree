@@ -22,24 +22,30 @@ export class PageService {
     });
   }
 
-  async listPages(tenantId: string | ObjectId): Promise<Page[]> {
+  async listPages(tenantId: string | ObjectId, websiteId?: string | ObjectId): Promise<Page[]> {
     const collection = await this.getCollection();
     const tid = typeof tenantId === 'string' ? new ObjectId(tenantId) : tenantId;
+    const wid = websiteId ? (typeof websiteId === 'string' ? new ObjectId(websiteId) : websiteId) : undefined;
+    const query: any = { tenantId: tid };
+    if (wid) query.websiteId = wid;
     return collection
-      .find({ tenantId: tid })
+      .find(query)
       .sort({ createdAt: -1 })
       .toArray();
   }
 
   async createPage(
     tenantId: string | ObjectId,
-    data: Omit<Page, keyof BaseDocument>
+    data: Omit<Page, keyof BaseDocument>,
+    websiteId?: string | ObjectId,
   ): Promise<Page> {
     const collection = await this.getCollection();
     const tid = typeof tenantId === 'string' ? new ObjectId(tenantId) : tenantId;
+    const wid = websiteId ? (typeof websiteId === 'string' ? new ObjectId(websiteId) : websiteId) : undefined;
     const page: Omit<Page, '_id'> = {
       ...data,
       tenantId: tid,
+      ...(wid ? { websiteId: wid } : {}),
       createdAt: new Date(),
       updatedAt: new Date(),
     };

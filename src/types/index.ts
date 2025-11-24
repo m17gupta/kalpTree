@@ -4,6 +4,8 @@ import { ObjectId } from 'mongodb';
 export interface BaseDocument {
   _id: ObjectId;
   tenantId: ObjectId;
+  // Optional website scope for multi-website tenants
+  websiteId?: ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }

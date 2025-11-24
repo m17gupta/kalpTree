@@ -14,19 +14,22 @@ export class PostService {
     return col.findOne({ tenantId: tid, slug, status: 'published' });
   }
 
-  async list(tenantId: string | ObjectId, opts?: { status?: Post['status']; tag?: string; skip?: number; limit?: number }): Promise<Post[]> {
+  async list(tenantId: string | ObjectId, opts?: { status?: Post['status']; tag?: string; skip?: number; limit?: number; websiteId?: string | ObjectId }): Promise<Post[]> {
     const col = await this.getCollection();
     const tid = typeof tenantId === 'string' ? new ObjectId(tenantId) : tenantId;
+    const wid = opts?.websiteId ? (typeof opts.websiteId === 'string' ? new ObjectId(opts.websiteId) : opts.websiteId) : undefined;
     const query: Partial<Post> & { tenantId: ObjectId } = { tenantId: tid };
+    if (wid) (query as any).websiteId = wid;
     if (opts?.status) query.status = opts.status;
     if (opts?.tag) query.tags = { $in: [opts.tag] } as unknown as Post['tags'];
     return col.find(query).skip(opts?.skip || 0).limit(opts?.limit || 50).sort({ createdAt: -1 }).toArray();
   }
 
-  async create(tenantId: string | ObjectId, data: Omit<Post, '_id' | 'tenantId' | 'createdAt' | 'updatedAt'>): Promise<Post> {
+  async create(tenantId: string | ObjectId, data: Omit<Post, '_id' | 'tenantId' | 'createdAt' | 'updatedAt'>, websiteId?: string | ObjectId): Promise<Post> {
     const col = await this.getCollection();
     const tid = typeof tenantId === 'string' ? new ObjectId(tenantId) : tenantId;
-    const doc: Omit<Post, '_id'> = { ...data, tenantId: tid, createdAt: new Date(), updatedAt: new Date() };
+    const wid = websiteId ? (typeof websiteId === 'string' ? new ObjectId(websiteId) : websiteId) : undefined;
+    const doc: Omit<Post, '_id'> = { ...data, tenantId: tid, ...(wid ? { websiteId: wid } : {}), createdAt: new Date(), updatedAt: new Date() };
     const r = await col.insertOne(doc as Post);
     return { ...doc, _id: r.insertedId } as Post;
   }
