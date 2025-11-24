@@ -9,7 +9,13 @@ export async function ensureIndexes() {
     db.collection('users').createIndex({ tenantId: 1, role: 1 }, { name: 'users_tenant_role' }),
     db.collection('custom_roles').createIndex({ tenantId: 1, name: 1 }, { unique: true, name: 'uniq_custom_roles_tenant_name' }),
 
-    // Website
+    // Websites
+    db.collection('websites').createIndex({ websiteId: 1 }, { unique: true, name: 'uniq_websites_id' }),
+    db.collection('websites').createIndex({ tenantId: 1, createdAt: -1 }, { name: 'websites_tenant_createdAt' }),
+    db.collection('websites').createIndex({ systemSubdomain: 1 }, { unique: true, name: 'uniq_websites_sys_sub' }),
+    db.collection('websites').createIndex({ primaryDomain: 1 }, { unique: true, sparse: true, name: 'uniq_websites_primary_domain' }),
+
+    // Website Content
     db.collection('pages').createIndex({ tenantId: 1, slug: 1 }, { unique: true, name: 'uniq_pages_tenant_slug' }),
     db.collection('posts').createIndex({ tenantId: 1, slug: 1 }, { unique: true, name: 'uniq_posts_tenant_slug' }),
     db.collection('categories').createIndex({ tenantId: 1, slug: 1 }, { unique: true, name: 'uniq_categories_tenant_slug' }),
@@ -20,7 +26,14 @@ export async function ensureIndexes() {
     // Ecommerce
     db.collection('products').createIndex({ tenantId: 1, slug: 1 }, { unique: true, name: 'uniq_products_tenant_slug' }),
     db.collection('products').createIndex({ tenantId: 1, status: 1 }, { name: 'products_tenant_status' }),
-    db.collection('products').createIndex({ name: 'text', description: 'text', tags: 'text' }),
+    // Text index (Mongo allows only one text index per collection). Ignore if already exists differently.
+    (async () => {
+      try {
+        await db.collection('products').createIndex({ name: 'text', description: 'text', tags: 'text' });
+      } catch {
+        // ignore conflicts with existing text index configuration
+      }
+    })(),
     db.collection('product_categories').createIndex({ tenantId: 1, slug: 1 }, { unique: true, name: 'uniq_product_categories_tenant_slug' }),
     db.collection('product_variants').createIndex({ tenantId: 1, productId: 1, name: 1 }, { unique: true, name: 'uniq_variants_tenant_product_name' }),
 

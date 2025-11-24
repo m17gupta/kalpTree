@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import clsx from "clsx"
 import {
   Book,
   ChevronRight,
@@ -58,42 +59,18 @@ import {
 // Data
 const data = {
   user: {
-    name: "shadcn",
-    email: "m@example.com",
+    name: "Admin",
+    email: "admin@example.com",
     avatar: "/avatars/shadcn.jpg",
   },
   navMain: [
-    {
-      title: "Playground",
-      url: "#",
-      icon: Folder,
-      isActive: true,
-      items: [
-        { title: "History", url: "#" },
-        { title: "Starred", url: "#" },
-        { title: "Settings", url: "#" },
-      ],
-    },
-    {
-      title: "Project",
-      url: "#",
-      icon: Archive, 
-    },
-    {
-      title: "Documentation",
-      url: "#",
-      icon: Book,
-      items: [
-        { title: "Guide", url: "#" },
-        { title: "API", url: "#" },
-        { title: "CLI", url: "#" },
-      ],
-    },
-    {
-      title: "Settings",
-      url: "#",
-      icon: Settings,
-    },
+    { title: "Dashboard", url: "/admin", icon: SquareTerminal },
+    { title: "Pages", url: "/admin/pages", icon: Folder },
+    { title: "Posts", url: "/admin/posts", icon: Book },
+    { title: "Products", url: "/admin/products", icon: Archive },
+    { title: "Websites", url: "/admin/websites", icon: Settings },
+    { title: "Categories", url: "/admin/categories", icon: Settings },
+    // Extend with orders, tags etc. as needed
   ],
 }
 
@@ -105,16 +82,11 @@ export function AppSidebar({ handleSwitchTab, ...rest }: AppSidebarProps) {
   const { open } = useSidebar();
   return (
      <Sidebar
-      className="border-r transition-all duration-300 relative"
+      className="border-r relative"
       side="left"
       variant="sidebar"
       collapsible="icon"
       {...rest}
-      style={{
-        width: open ? "320px" : "64px",
-        minWidth: open ? "320px" : "64px",
-        transition: "all 0.3s ease"
-      }}
     >
 
 
@@ -126,10 +98,12 @@ export function AppSidebar({ handleSwitchTab, ...rest }: AppSidebarProps) {
               <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-gray-900 text-sidebar-primary-foreground">
                  <span className="text-white font-bold">A</span>
               </div>
-              <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-semibold">Acme Inc</span>
-                <span className="truncate text-xs">Enterprise</span>
-              </div>
+              {open && (
+                <div className="grid flex-1 text-left text-sm leading-tight">
+                  <span className="truncate font-semibold">Acme Inc</span>
+                  <span className="truncate text-xs">Enterprise</span>
+                </div>
+              )}
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
@@ -138,46 +112,17 @@ export function AppSidebar({ handleSwitchTab, ...rest }: AppSidebarProps) {
       {/* --- CONTENT --- */}
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Platform</SidebarGroupLabel>
+          <SidebarGroupLabel className={open ? "" : "hidden"}>Platform</SidebarGroupLabel>
           <SidebarMenu>
             {data.navMain.map((item) => (
-              item.items ? (
-                <Collapsible
-                  key={item.title}
-                  asChild
-                  defaultOpen={item.isActive}
-                  className="group/collapsible"
-                >
-                  <SidebarMenuItem>
-                    <CollapsibleTrigger asChild>
-                      <SidebarMenuButton tooltip={item.title}>
-                        {item.icon && <item.icon />}
-                    
-                        <span >{item.title} </span>
-                        <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-                      </SidebarMenuButton>
-                    </CollapsibleTrigger>
-                    <CollapsibleContent>
-                      <SidebarMenuSub>
-                        {item.items?.map((subItem) => (
-                          <SidebarMenuSubItem key={subItem.title}>
-                            <SidebarMenuSubButton asChild>
-                              <span onClick={()=>handleSwitchTab("history")}>{subItem.title}</span>
-                            </SidebarMenuSubButton>
-                          </SidebarMenuSubItem>
-                        ))}
-                      </SidebarMenuSub>
-                    </CollapsibleContent>
-                  </SidebarMenuItem>
-                </Collapsible>
-              ) : (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton tooltip={item.title}>
-                    {item.icon && <item.icon />}
-                    <span onClick={()=>handleSwitchTab((item.title).toLowerCase())}>{item.title}</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              )
+              <SidebarMenuItem key={item.title}>
+                <SidebarMenuButton asChild tooltip={item.title}>
+                  <a href={item.url} className={clsx("flex items-center gap-2 w-full", open ? "justify-start" : "justify-center") }>
+                    {item.icon && <item.icon className="shrink-0" />}
+                    <span className="truncate" style={{ display: open ? "inline" : "none" }}>{item.title}</span>
+                  </a>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             ))}
           </SidebarMenu>
         </SidebarGroup>

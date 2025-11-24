@@ -19,6 +19,6 @@ export async function middleware(req: NextRequest) {
 export const config = {
   matcher: [
     "/admin/:path*",
-    "/api/(pages|posts|products|orders|categories|blog_tags|product_categories|product_variants)",
+    "/api/(pages|posts|products|orders|categories|blog_tags|product_categories|product_variants|websites)",
   ],
 };

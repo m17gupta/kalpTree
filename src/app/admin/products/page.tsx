@@ -1,5 +1,15 @@
+import { cookies, headers } from "next/headers";
+
 export default async function ProductsAdmin() {
-  const res = await fetch("/api/products", { cache: "no-store" })
+  const cookie = cookies().toString();
+  const h = headers();
+  const host = h.get("x-forwarded-host") ?? h.get("host");
+  const proto = h.get("x-forwarded-proto") ?? "http";
+  const baseUrl = `${proto}://${host}`;
+  const res = await fetch(`${baseUrl}/api/products`, { cache: "no-store", headers: { cookie } })
+  if (!res.ok) {
+    return <div className="text-sm text-red-600">Failed to load products</div>
+  }
   const data = await res.json()
   const items = data.items || []
 

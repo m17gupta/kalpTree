@@ -17,8 +17,17 @@ export function useSidebar() {
 }
 
 export function Sidebar({ children, className, side, variant, collapsible, style }: { children: React.ReactNode; className?: string; side?: string; variant?: string; collapsible?: string; style?: React.CSSProperties }) {
+  const { open } = useSidebar();
   return (
-    <aside className={clsx("bg-background", className)} style={style}>
+    <aside
+      className={clsx(
+        "bg-background overflow-hidden",
+        open ? "w-[320px] min-w-[320px]" : "w-[64px] min-w-[64px]",
+        className
+      )}
+      style={style}
+      aria-expanded={open}
+    >
       {children}
     </aside>
   );
@@ -42,9 +51,13 @@ export function SidebarMenu({ children }: { children: React.ReactNode }) {
 export function SidebarMenuItem({ children }: { children: React.ReactNode }) {
   return <li>{children}</li>;
 }
-export function SidebarMenuButton({ children, className, size, tooltip, ...props }: { children: React.ReactNode; className?: string; size?: string; tooltip?: string } & React.ButtonHTMLAttributes<HTMLButtonElement>) {
+export function SidebarMenuButton({ children, className, size, tooltip, asChild, ...props }: { children: React.ReactNode; className?: string; size?: string; tooltip?: string; asChild?: boolean } & React.ButtonHTMLAttributes<HTMLButtonElement>) {
+  const classes = clsx("w-full flex items-center gap-2 px-2 py-2 rounded hover:bg-muted/50 text-left", className);
+  if (asChild) {
+    return <div className={classes}>{children}</div>;
+  }
   return (
-    <button className={clsx("w-full flex items-center gap-2 px-2 py-2 rounded hover:bg-muted/50 text-left", className)} {...props}>
+    <button className={classes} {...props}>
       {children}
     </button>
   );
@@ -52,8 +65,8 @@ export function SidebarMenuButton({ children, className, size, tooltip, ...props
 export function SidebarGroup({ children, className }: { children: React.ReactNode; className?: string }) {
   return <div className={clsx("mt-3", className)}>{children}</div>;
 }
-export function SidebarGroupLabel({ children }: { children: React.ReactNode }) {
-  return <div className="px-2 text-xs text-muted-foreground uppercase tracking-wide mb-1">{children}</div>;
+export function SidebarGroupLabel({ children, className }: { children: React.ReactNode; className?: string }) {
+  return <div className={clsx("px-2 text-xs text-muted-foreground uppercase tracking-wide mb-1", className)}>{children}</div>;
 }
 export function SidebarGroupContent({ children, className }: { children: React.ReactNode; className?: string }) {
   return <div className={className}>{children}</div>;
