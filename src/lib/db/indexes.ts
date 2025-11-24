@@ -34,8 +34,8 @@ export async function ensureIndexes() {
         // ignore conflicts with existing text index configuration
       }
     })(),
-    db.collection('product_categories').createIndex({ tenantId: 1, slug: 1 }, { unique: true, name: 'uniq_product_categories_tenant_slug' }),
-    db.collection('product_variants').createIndex({ tenantId: 1, productId: 1, name: 1 }, { unique: true, name: 'uniq_variants_tenant_product_name' }),
+    db.collection('product_categories').createIndex({ tenantId: 1, websiteId: 1, slug: 1 }, { unique: true, name: 'uniq_product_categories_tenant_website_slug' }),
+    db.collection('product_variants').createIndex({ tenantId: 1, websiteId: 1, productId: 1, name: 1 }, { unique: true, name: 'uniq_variants_tenant_website_product_name' }),
 
     db.collection('orders').createIndex({ tenantId: 1, orderNumber: 1 }, { unique: true, name: 'uniq_orders_tenant_number' }),
     db.collection('carts').createIndex({ tenantId: 1, sessionId: 1 }, { name: 'carts_tenant_session' }),

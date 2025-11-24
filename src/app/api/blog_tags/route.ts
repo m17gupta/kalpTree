@@ -11,7 +11,8 @@ const createSchema = z.object({
 export async function GET() {
   const session = await auth();
   if (!session?.user?.tenantId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  const items = await blogTagService.list(session.user.tenantId as string);
+  const websiteId = (await import('next/headers')).cookies().get('current_website_id')?.value;
+  const items = await blogTagService.list(session.user.tenantId as string, websiteId);
   return NextResponse.json({ items, meta: { total: items.length, limit: items.length, skip: 0, hasMore: false } });
 }
 
@@ -21,6 +22,7 @@ export async function POST(req: Request) {
   const json = await req.json();
   const parsed = createSchema.safeParse(json);
   if (!parsed.success) return NextResponse.json({ error: 'Invalid payload', issues: parsed.error.flatten() }, { status: 400 });
-  const created = await blogTagService.create(session.user.tenantId as string, parsed.data);
+  const websiteId = (await import('next/headers')).cookies().get('current_website_id')?.value;
+  const created = await blogTagService.create(session.user.tenantId as string, parsed.data, websiteId);
   return NextResponse.json(created, { status: 201 });
 }
