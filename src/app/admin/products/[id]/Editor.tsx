@@ -24,6 +24,22 @@ export default function ProductEditor({ id, item }: { id: string; item: any }) {
 
   return (
     <form onSubmit={onSubmit} className="space-y-3">
+      <div className="flex items-center justify-between">
+        <div className="font-medium">/{slug}</div>
+        <button
+          type="button"
+          className="px-3 py-2 rounded bg-red-600 text-white"
+          onClick={async () => {
+            if (!confirm('Delete this product?')) return;
+            const res = await fetch(`/api/products/${id}`, { method: 'DELETE' });
+            if (res.ok) {
+              window.location.href = '/admin/products';
+            } else {
+              setMsg('Delete failed');
+            }
+          }}
+        >Delete</button>
+      </div>
       <div>
         <label className="text-sm">Name</label>
         <input className="border p-2 w-full rounded" value={name} onChange={e => setName(e.target.value)} />
