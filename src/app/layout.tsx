@@ -20,6 +20,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        {/* Add GrapesJS styles */}
+        <link
+          rel="stylesheet"
+          href="https://unpkg.com/grapesjs/dist/css/grapes.min.css"
+        />
+      </head>
       <body className={`${inter.variable} antialiased`}>
         {children}
       </body>
