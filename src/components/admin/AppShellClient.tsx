@@ -22,7 +22,7 @@ export function AppShellClient({
   const router = useRouter();
 
   const handleWebsiteChange = async (websiteId: string) => {
-    const newWebsite = websites.find(w => w.websiteId === websiteId) || null;
+    const newWebsite = websites.find(w => w._id === websiteId) || null;
     setCurrentWebsite(newWebsite);
 
     startTransition(async () => {

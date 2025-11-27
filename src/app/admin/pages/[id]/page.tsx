@@ -11,7 +11,6 @@ export default async function PageDetail({
   const t = param.id;
   const cookies = await cookiesFn(); // no await
   const headers = await headersFn(); // no await
-
   const cookie = cookies.toString();
   const host = headers.get("x-forwarded-host") ?? headers.get("host");
   const proto = headers.get("x-forwarded-proto") ?? "http";
@@ -22,8 +21,17 @@ export default async function PageDetail({
     headers: { cookie },
   });
 
+  const websiteId = cookies.get("current_website_id")?.value
+
+  const viewwebsiteurl = await fetch(`${baseUrl}/api/domain/website?id=${websiteId}`, {
+    cache: "no-store",
+  });
+
+  const website = await viewwebsiteurl.json()
+
   if (!res.ok) return <div className="text-sm text-red-600">Not found</div>;
 
+  
   const { item } = await res.json();
 
   const fieldConfig: FieldConfig[] = [
@@ -72,13 +80,22 @@ export default async function PageDetail({
       type: "text",
       side: "right",
       placeholder: "tenant-id",
+      readOnly: true
+    },
+     {
+      name: "websiteId",
+      label: "Website",
+      type: "text",
+      side: "right",
+      placeholder: "website-id",
+      readOnly: true
     },
   ];
 
   return (
     <div className="space-y-4">
       <h2 className="text-xl font-medium">Edit Page</h2>
-      <PageEditor id={t} item={item} fields={fieldConfig} />
+      <PageEditor viewUrl={website} id={t} item={item} fields={fieldConfig} />
     </div>
   );
 }

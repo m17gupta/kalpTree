@@ -328,7 +328,7 @@ function Sidebar({
                 </SelectTrigger>
                 <SelectContent>
                   {websites.map((site) => (
-                    <SelectItem key={site.websiteId} value={site.websiteId}>
+                    <SelectItem key={site._id} value={site._id}>
                       <div className="flex flex-col">
                         <span className="text-xs font-medium">{site.name}</span>
                         <span className="text-[11px] text-muted-foreground">
@@ -516,7 +516,7 @@ function MobileSidebar({
             </SelectTrigger>
             <SelectContent>
               {websites.map((site) => (
-                <SelectItem key={site.websiteId} value={site.websiteId}>
+                <SelectItem key={site._id} value={site._id}>
                   <div className="flex flex-col">
                     <span className="text-xs font-medium">{site.name}</span>
                     <span className="text-[11px] text-muted-foreground">

@@ -49,6 +49,7 @@ export class PageService {
 
   async listPages(tenantId: string | ObjectId, websiteId?: string | ObjectId): Promise<Page[]> {
     const collection = await this.getCollection();
+
     const tid = typeof tenantId === 'string' ? new ObjectId(tenantId) : tenantId;
     const wid = websiteId ? (typeof websiteId === 'string' ? new ObjectId(websiteId) : websiteId) : undefined;
     const query: any = { tenantId: tid };

@@ -23,12 +23,13 @@ export async function POST(req: Request) {
 
   // Verify that website belongs to the same tenant
   const list = await websiteService.listByTenant(session.user.tenantId);
-  const found = list.find(w => w.websiteId === parsed.data.websiteId);
+  console.log("====>>>>>>>> in session/website", list, parsed)
+  const found = list.find(w => String(w._id) === parsed.data.websiteId);
   if (!found) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
   const res = NextResponse.json({ ok: true, websiteId: found.websiteId });
   const thirtyDays = 30 * 24 * 60 * 60; // seconds
-  res.cookies.set('current_website_id', found.websiteId, {
+  res.cookies.set('current_website_id', String(found["_id"]), {
     httpOnly: true,
     sameSite: 'lax',
     secure: false,

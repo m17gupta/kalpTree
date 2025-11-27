@@ -10,16 +10,11 @@ function toNumber(v: string | null, def: number, min = 0, max = 100) {
 }
 
 const createSchema = z.object({
-  filename: z.string().min(1),
-  originalName: z.string().min(1),
-  mimeType: z.string().min(1),
+  name: z.string().min(1),
+  category: z.string().min(1),
   size: z.number().int().nonnegative(),
   url: z.string().min(1),
-  thumbnailUrl: z.string().optional(),
-  alt: z.string().optional(),
-  caption: z.string().optional(),
-  uploadedBy: z.string().min(1),
-  folderId: z.string().optional(),
+  tags: z.array(z.string())
 });
 
 export async function GET(req: Request) {
@@ -41,6 +36,8 @@ export async function POST(req: Request) {
   if (!session?.user?.tenantId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const json = await req.json();
   const parsed = createSchema.safeParse(json);
+
+  
   if (!parsed.success) return NextResponse.json({ error: 'Invalid payload', issues: parsed.error.flatten() }, { status: 400 });
   const { cookies } = await import('next/headers');
   const jar = await cookies();

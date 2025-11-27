@@ -35,11 +35,12 @@ export async function middleware(req: NextRequest) {
         });
         if (r.ok) {
           const data = await r.json();
+          console.log("===>>>>in middelware", data)
           if (data?.matched && data.websiteId) {
             const current = req.cookies.get("current_website_id")?.value;
             if (current !== data.websiteId) {
               const res = NextResponse.next();
-              res.cookies.set("current_website_id", String(data.websiteId), {
+              res.cookies.set("current_website_id", String(data._id), {
                 httpOnly: true,
                 sameSite: "lax",
                 path: "/",

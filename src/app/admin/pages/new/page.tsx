@@ -1,29 +1,80 @@
-"use client"
+import { cookies as cookiesFn, headers as headersFn } from "next/headers";
+import PageCreator, { FieldConfig } from "@/components/admin/Creator";
+import { auth } from "@/auth";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
+export default async function NewPage() {
+  const session = await auth()
+  console.log(session?.user)
+  const cookies = await cookiesFn();
+  const headers = await headersFn();
 
-export default function NewPage() {
-  const [saving, setSaving] = useState(false)
-  const [form, setForm] = useState({ title: "", slug: "", content: "" })
+  const currentWebsiteId = cookies.get('current_website_id')?.value;
 
-  async function submit() {
-    setSaving(true)
-    await fetch("/api/pages", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) })
-    setSaving(false)
-    window.location.href = "/admin/pages"
-  }
+  // Default/empty item for new page
+  const emptyItem = {
+    title: "",
+    content: "",
+    slug: "",
+    status: "draft",
+    tenantId: session?.user.tenantId || "",
+    websiteId: currentWebsiteId || "",
+  };
+
+  const fieldConfig: FieldConfig[] = [
+    // Left side (8/12 width) - Main content
+    {
+      name: "title",
+      label: "Title",
+      type: "text",
+      side: "left",
+      placeholder: "Enter page title",
+    },
+    {
+      name: "content",
+      label: "Content",
+      type: "textarea",
+      side: "left",
+      rows: 10,
+    },
+
+    // Right side (4/12 width) - Metadata
+    {
+      name: "slug",
+      label: "Slug",
+      type: "text",
+      side: "right",
+      placeholder: "page-slug",
+    },
+    {
+      name: "status",
+      label: "Status",
+      type: "select",
+      side: "right",
+      options: [
+        { value: "draft", label: "draft" },
+        { value: "published", label: "published" },
+      ],
+    },
+    {
+      name: "tenantId",
+      label: "Tenant",
+      type: "text",
+      side: "right",
+      placeholder: "tenant-id",
+    },
+    {
+      name: "websiteId",
+      label: "Website",
+      type: "text",
+      side: "right",
+      placeholder: "website-id",
+    },
+  ];
 
   return (
-    <div className="max-w-xl space-y-3">
-      <h2 className="text-xl font-medium">New Page</h2>
-      <input className="border p-2 w-full rounded" placeholder="Title" value={form.title} onChange={(e)=>setForm({...form, title:e.target.value, slug:e.target.value.toLowerCase().replace(/\s+/g,'-')})} />
-      <input className="border p-2 w-full rounded" placeholder="Slug" value={form.slug} onChange={(e)=>setForm({...form, slug:e.target.value})} />
-      <textarea className="border p-2 w-full rounded h-40" placeholder="Content" value={form.content} onChange={(e)=>setForm({...form, content:e.target.value})} />
-      <div className="flex gap-2">
-        <Button onClick={submit} disabled={saving}>{saving ? 'Saving...' : 'Save'}</Button>
-        <a className="underline text-sm" href="/admin/pages">Cancel</a>
-      </div>
+    <div className="space-y-4">
+      <h2 className="text-xl font-medium">Create New Page</h2>
+      <PageCreator item={emptyItem} fields={fieldConfig} />
     </div>
-  )
+  );
 }

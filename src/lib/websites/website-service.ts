@@ -1,7 +1,7 @@
-import { ObjectId } from 'mongodb';
-import { getDatabase } from '@/lib/db/mongodb';
+import { ObjectId } from "mongodb";
+import { getDatabase } from "@/lib/db/mongodb";
 
-export type ServiceType = 'WEBSITE_ONLY' | 'ECOMMERCE';
+export type ServiceType = "WEBSITE_ONLY" | "ECOMMERCE";
 
 export interface WebsiteDoc {
   _id: ObjectId;
@@ -9,7 +9,7 @@ export interface WebsiteDoc {
   tenantId: ObjectId;
   name: string;
   serviceType: ServiceType;
-  primaryDomain?: string | null;
+  primaryDomain?: string[] | null;
   systemSubdomain: string;
   branding?: {
     // legacy fields
@@ -34,42 +34,64 @@ export interface WebsiteDoc {
 function slugify(input: string) {
   return input
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)+/g, '')
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)+/g, "")
     .slice(0, 40);
 }
 
 export class WebsiteService {
   private async col() {
     const db = await getDatabase();
-    return db.collection<WebsiteDoc>('websites');
+    return db.collection<WebsiteDoc>("websites");
   }
 
   async ensureIndexes() {
     const c = await this.col();
     await Promise.all([
-      c.createIndex({ websiteId: 1 }, { unique: true, name: 'uniq_websites_id' }),
-      c.createIndex({ tenantId: 1, createdAt: -1 }, { name: 'websites_tenant_createdAt' }),
-      c.createIndex({ systemSubdomain: 1 }, { unique: true, name: 'uniq_websites_sys_sub' }),
+      c.createIndex(
+        { websiteId: 1 },
+        { unique: true, name: "uniq_websites_id" }
+      ),
+      c.createIndex(
+        { tenantId: 1, createdAt: -1 },
+        { name: "websites_tenant_createdAt" }
+      ),
+      c.createIndex(
+        { systemSubdomain: 1 },
+        { unique: true, name: "uniq_websites_sys_sub" }
+      ),
       // Unique only for actual string domains; avoid indexing nulls
-      c.createIndex({ primaryDomain: 1 }, { unique: true, sparse: true, name: 'uniq_websites_primary_domain' }),
+      c.createIndex(
+        { primaryDomain: 1 },
+        { unique: true, sparse: true, name: "uniq_websites_primary_domain" }
+      ),
     ]);
   }
 
   async listByTenant(tenantId: string | ObjectId) {
     const c = await this.col();
-    const tid = typeof tenantId === 'string' ? new ObjectId(tenantId) : tenantId;
+    const tid =
+      typeof tenantId === "string" ? new ObjectId(tenantId) : tenantId;
     return c.find({ tenantId: tid }).sort({ createdAt: -1 }).toArray();
   }
 
   async getByHost(host: string) {
     const c = await this.col();
-    const doc = await c.findOne({ $or: [{ primaryDomain: host }, { systemSubdomain: host }] });
+    const doc = await c.findOne({
+      $or: [
+        { primaryDomain: host }, // matches string
+        { primaryDomain: { $elemMatch: { $eq: host } } }, // matches array
+        { systemSubdomain: host },
+      ],
+    });
     return doc || null;
   }
 
-  private async generateSystemSubdomain(tenantSlug: string, websiteName: string) {
-    const base = process.env.SYSTEM_BASE_DOMAIN || 'kalptree.xyz';
+  private async generateSystemSubdomain(
+    tenantSlug: string,
+    websiteName: string
+  ) {
+    const base = process.env.SYSTEM_BASE_DOMAIN || "kalptree.xyz";
     const left = `${slugify(tenantSlug)}-${slugify(websiteName)}`.slice(0, 60);
     const candidate = `${left}.${base}`;
     const c = await this.col();
@@ -84,21 +106,27 @@ export class WebsiteService {
     tenantSlug: string;
     name: string;
     serviceType: ServiceType;
-    primaryDomain?: string | null;
+    primaryDomain?: string[] | null;
   }) {
     const c = await this.col();
-    const tid = typeof params.tenantId === 'string' ? new ObjectId(params.tenantId) : params.tenantId;
+    const tid =
+      typeof params.tenantId === "string"
+        ? new ObjectId(params.tenantId)
+        : params.tenantId;
     const websiteId = new ObjectId().toHexString();
-    const systemSubdomain = await this.generateSystemSubdomain(params.tenantSlug, params.name);
+    const systemSubdomain = await this.generateSystemSubdomain(
+      params.tenantSlug,
+      params.name
+    );
     const now = new Date();
-    const doc: Omit<WebsiteDoc, '_id'> = {
+    const doc: Omit<WebsiteDoc, "_id"> = {
       websiteId,
       tenantId: tid,
       name: params.name,
       serviceType: params.serviceType,
       ...(params.primaryDomain ? { primaryDomain: params.primaryDomain } : {}),
       systemSubdomain,
-      branding: { },
+      branding: {},
       createdAt: now,
       updatedAt: now,
     };
@@ -111,15 +139,24 @@ export class WebsiteService {
     return c.findOne({ websiteId });
   }
 
-  async updateBranding(websiteId: string, updates: NonNullable<WebsiteDoc['branding']>) {
+  async updateBranding(
+    websiteId: string,
+    updates: NonNullable<WebsiteDoc["branding"]>
+  ) {
     const c = await this.col();
-    const r = await c.updateOne({ websiteId }, { $set: { 'branding': updates, updatedAt: new Date() } });
+    const r = await c.updateOne(
+      { websiteId },
+      { $set: { branding: updates, updatedAt: new Date() } }
+    );
     return r.modifiedCount > 0;
   }
 
-  async updateDomain(websiteId: string, primaryDomain: string | null) {
+  async updateDomain(websiteId: string, primaryDomain: string[] | null) {
     const c = await this.col();
-    const r = await c.updateOne({ websiteId }, { $set: { primaryDomain, updatedAt: new Date() } });
+    const r = await c.updateOne(
+      { websiteId },
+      { $set: { primaryDomain, updatedAt: new Date() } }
+    );
     return r.modifiedCount > 0;
   }
 }
