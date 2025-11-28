@@ -27,21 +27,22 @@ export async function AppShellProvider({ children }: AppShellProviderProps) {
   if (user?.tenantId) {
     try {
       const websiteDocs = await websiteService.listByTenant(user.tenantId);
-      websites = websiteDocs.map(doc => ({
-        _id: doc._id.toString(),
-        websiteId: doc.websiteId,
-        name: doc.name,
-        primaryDomain: doc.primaryDomain,
-        systemSubdomain: doc.systemSubdomain,
-        serviceType: doc.serviceType,
-        status: "active" as const, // TODO: Add status field to WebsiteDoc
-      }));
+        websites = websiteDocs.map(doc => ({
+          _id: doc._id.toString(),
+          websiteId: doc.websiteId,
+          name: doc.name,
+          primaryDomain: Array.isArray(doc.primaryDomain) ? doc.primaryDomain[0] ?? null : doc.primaryDomain,
+          systemSubdomain: doc.systemSubdomain,
+          serviceType: doc.serviceType,
+          status: "active" as const, // TODO: Add status field to WebsiteDoc
+        }));
+
 
       // Get current website from cookie
       const cookieStore = await cookies();
       const currentWebsiteId = cookieStore.get('current_website_id')?.value;
       if (currentWebsiteId) {
-        currentWebsite = websites.find(w => w.websiteId === currentWebsiteId) || null;
+        currentWebsite = websites.find(w => w._id === currentWebsiteId) || null;
       }
       
       // If no current website but websites exist, set the first one as current

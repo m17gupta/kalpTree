@@ -1,3 +1,5 @@
+
+
 "use client";
 
 import * as React from "react";
@@ -10,7 +12,6 @@ import {
   Server,
   Shield,
   FileText,
-  ImageIcon,
   Type,
   ShoppingBag,
   BarChart3,
@@ -60,6 +61,15 @@ import {
   Plug2,
   Store,
   ExternalLink,
+  Images,
+  RectangleHorizontal,
+  RectangleVertical,
+  Navigation,
+  BadgeCent,
+  Palette,
+  Share2,
+  LayoutTemplate,
+  Globe,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -95,6 +105,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { signOut } from "next-auth/react";
 
 // ---------------------------------------------------------------------------
 // Types & interfaces
@@ -104,9 +115,9 @@ export type Website = {
   _id: string;
   websiteId: string;
   name: string;
-  primaryDomain?: string | null;
+  primaryDomain?: string []|string | null;
   systemSubdomain: string;
-  serviceType: 'WEBSITE_ONLY' | 'ECOMMERCE';
+  serviceType: "WEBSITE_ONLY" | "ECOMMERCE";
   status?: "active" | "paused" | "error";
 };
 
@@ -146,436 +157,93 @@ type NavSection = {
 // Navigation structure
 // ---------------------------------------------------------------------------
 
-const accountSection: NavSection = {
-  id: "account",
-  label: "Account / Platform",
-  items: [
-    {
-      label: "Platform Home",
-      href: "/admin",
-      icon: LayoutDashboard,
-    },
-    {
-      label: "Websites",
-      href: "/admin/websites",
-      icon: Globe2,
-      permission: "websites:read",
-    },
-    {
-      label: "Users & Roles",
-      href: "/admin/users",
-      icon: Users,
-      permission: "users:read",
-    },
-    {
-      label: "Billing & Plans",
-      href: "/admin/billing",
-      icon: CreditCard,
-      permission: "billing:read",
-      badge: "Pro",
-    },
-    {
-      label: "Platform Settings",
-      href: "/admin/settings",
-      icon: Settings,
-      permission: "settings:read",
-    },
-  ],
-};
-
 const currentWebsiteSections: NavSection[] = [
   {
     id: "website-overview",
-    label: "Current Website",
-    items: [
-      {
-        label: "Overview",
-        href: "/admin/site/overview",
-        icon: LayoutDashboard,
-      },
-      {
-        label: "Domain & Hosting",
-        href: "/admin/site/domain-hosting",
-        icon: Globe2,
-        permission: "websites:update",
-      },
-      {
-        label: "Performance & Analytics",
-        href: "/admin/site/performance",
-        icon: BarChart3,
-        permission: "analytics:view",
-      },
-      {
-        label: "Security",
-        href: "/admin/site/security",
-        icon: Shield,
-        permission: "security:read",
-      },
-    ],
-  },
-  {
-    id: "content",
-    label: "Content",
+    label: "Websites",
     items: [
       {
         label: "Pages",
         href: "/admin/pages",
-        icon: FileText,
-        permission: "content:read",
+        icon: LayoutDashboard,
       },
       {
         label: "Posts",
         href: "/admin/posts",
         icon: FileText,
-        permission: "content:read",
+        permission: "websites:update",
       },
       {
-        label: "Tags",
-        href: "/admin/tags",
-        icon: Tags,
-        permission: "content:read",
+        label: "Media",
+        href: "/admin/media",
+        icon: Images,
+        permission: "analytics:view",
       },
       {
-        label: "Media Library",
-        href: "/admin/site/media",
-        icon: ImageIcon,
-        permission: "content:read",
+        label: "Header",
+        href: "/admin/header",
+        icon: RectangleHorizontal,
+        permission: "security:read",
+      },
+      {
+        label: "Footer",
+        href: "/admin/footer",
+        icon: RectangleVertical,
+        permission: "security:read",
       },
       {
         label: "Navigation",
-        href: "/admin/site/navigation",
-        icon: Server,
+        href: "/admin/navigation",
+        icon: Navigation,
+        permission: "security:read",
+      },
+    ],
+  },
+  {
+    id: "branding",
+    label: "Branding & Design",
+    items: [
+      {
+        label: "Logo",
+        href: "/admin/logo",
+        icon: BadgeCent,
+        permission: "content:read",
+      },
+      {
+        label: "Color Pallet",
+        href: "/admin/color-pallet",
+        icon: Palette,
+        permission: "content:read",
+      },
+      {
+        label: "Social Links",
+        href: "/admin/social-links",
+        icon: Share2,
+        permission: "content:read",
+      },
+      {
+        label: "Layout Settings",
+        href: "/admin/layout-settings",
+        icon: LayoutTemplate,
+        permission: "content:read",
+      },
+      {
+        label: "Typography",
+        href: "/admin/typography",
+        icon: Type,
         permission: "content:update",
       },
     ],
   },
   {
-    id: "brand",
-    label: "Brand & Design",
+    id: "domains",
+    label: "Domain & Hosting",
     items: [
       {
-        label: "Brand Profile",
-        href: "/admin/websites/branding",
-        icon: Type,
-        permission: "settings:branding",
-      },
-      {
-        label: "Theme & Layouts",
-        href: "/admin/site/theme",
-        icon: LayoutDashboard,
-        permission: "settings:branding",
-      },
-      {
-        label: "Sections & Blocks",
-        href: "/admin/site/sections",
-        icon: Sparkles,
-        permission: "settings:branding",
-      },
-    ],
-  },
-  {
-    id: "commerce",
-    label: "Commerce",
-    items: [
-      {
-        label: "Products",
-        href: "/admin/products",
-        icon: Package,
-        permission: "products:read",
-      },
-      {
-        label: "Categories",
-        href: "/admin/categories",
-        icon: ShoppingBag,
-        permission: "products:read",
-      },
-      {
-        label: "Orders",
-        href: "/admin/orders",
-        icon: ShoppingCart,
-        permission: "orders:read",
-      },
-    ],
-  },
-  {
-    id: "hosting",
-    label: "Hosting & Infrastructure",
-    items: [
-      {
-        label: "Server Management",
-        href: "/admin/hosting/servers",
-        icon: Server,
-        permission: "hosting:manage",
-      },
-      {
-        label: "Database Management",
-        href: "/admin/hosting/databases",
-        icon: Database,
-        permission: "hosting:database",
-      },
-      {
-        label: "File Manager",
-        href: "/admin/hosting/files",
-        icon: FolderOpen,
-        permission: "hosting:files",
-      },
-      {
-        label: "Backups & Restore",
-        href: "/admin/hosting/backups",
-        icon: HardDrive,
-        permission: "hosting:backup",
-      },
-      {
-        label: "SSL Certificates",
-        href: "/admin/hosting/ssl",
-        icon: Lock,
-        permission: "hosting:ssl",
-      },
-      {
-        label: "CDN Settings",
-        href: "/admin/hosting/cdn",
-        icon: CloudCog,
-        permission: "hosting:cdn",
-      },
-    ],
-  },
-  {
-    id: "email",
-    label: "Email & Communication",
-    items: [
-      {
-        label: "Email Accounts",
-        href: "/admin/email/accounts",
-        icon: Mail,
-        permission: "email:manage",
-      },
-      {
-        label: "Email Forwarding",
-        href: "/admin/email/forwarding",
-        icon: Forward,
-        permission: "email:forward",
-      },
-      {
-        label: "Autoresponders",
-        href: "/admin/email/autoresponders",
-        icon: MessageSquare,
-        permission: "email:autorespond",
-      },
-      {
-        label: "Mailing Lists",
-        href: "/admin/email/lists",
-        icon: Users,
-        permission: "email:lists",
-      },
-      {
-        label: "SMTP Settings",
-        href: "/admin/email/smtp",
-        icon: Settings,
-        permission: "email:smtp",
-      },
-    ],
-  },
-  {
-    id: "security",
-    label: "Security & Monitoring",
-    items: [
-      {
-        label: "Security Center",
-        href: "/admin/security/center",
-        icon: Shield,
-        permission: "security:manage",
-      },
-      {
-        label: "Firewall Settings",
-        href: "/admin/security/firewall",
-        icon: Zap,
-        permission: "security:firewall",
-      },
-      {
-        label: "Access Logs",
-        href: "/admin/security/access-logs",
-        icon: Eye,
-        permission: "security:logs",
-      },
-      {
-        label: "Malware Scanner",
-        href: "/admin/security/malware",
-        icon: AlertTriangle,
-        permission: "security:scan",
-      },
-      {
-        label: "Two-Factor Auth",
-        href: "/admin/security/2fa",
-        icon: Key,
-        permission: "security:2fa",
-      },
-      {
-        label: "IP Blocking",
-        href: "/admin/security/ip-blocking",
-        icon: Lock,
-        permission: "security:ip",
-      },
-    ],
-  },
-  {
-    id: "performance",
-    label: "Performance & Optimization",
-    items: [
-      {
-        label: "Caching Settings",
-        href: "/admin/performance/caching",
-        icon: Timer,
-        permission: "performance:cache",
-      },
-      {
-        label: "Performance Monitor",
-        href: "/admin/performance/monitor",
-        icon: Activity,
-        permission: "performance:monitor",
-      },
-      {
-        label: "Speed Optimization",
-        href: "/admin/performance/speed",
-        icon: TrendingUp,
-        permission: "performance:optimize",
-      },
-      {
-        label: "Resource Usage",
-        href: "/admin/performance/resources",
-        icon: Gauge,
-        permission: "performance:resources",
-      },
-      {
-        label: "Error Logs",
-        href: "/admin/performance/errors",
-        icon: FileBarChart,
-        permission: "performance:errors",
-      },
-      {
-        label: "Network Analysis",
-        href: "/admin/performance/network",
-        icon: Network,
-        permission: "performance:network",
-      },
-    ],
-  },
-  {
-    id: "integrations",
-    label: "Integrations & Apps",
-    items: [
-      {
-        label: "App Store",
-        href: "/admin/integrations/store",
-        icon: Store,
-        permission: "integrations:store",
-      },
-      {
-        label: "Third-party Integrations",
-        href: "/admin/integrations/third-party",
-        icon: Plug2,
-        permission: "integrations:manage",
-      },
-      {
-        label: "Plugins & Extensions",
-        href: "/admin/integrations/plugins",
-        icon: Puzzle,
-        permission: "integrations:plugins",
-      },
-      {
-        label: "API Connections",
-        href: "/admin/integrations/api",
-        icon: GitBranch,
-        permission: "integrations:api",
-      },
-      {
-        label: "Webhooks",
-        href: "/admin/integrations/webhooks",
-        icon: Webhook,
-        permission: "integrations:webhooks",
-      },
-      {
-        label: "External Services",
-        href: "/admin/integrations/external",
-        icon: ExternalLink,
-        permission: "integrations:external",
-      },
-    ],
-  },
-  {
-    id: "support",
-    label: "Support & Help",
-    items: [
-      {
-        label: "Help Center",
-        href: "/admin/support/help",
-        icon: HelpCircle,
-        permission: "support:help",
-      },
-      {
-        label: "Contact Support",
-        href: "/admin/support/contact",
-        icon: Phone,
-        permission: "support:contact",
-      },
-      {
-        label: "Documentation",
-        href: "/admin/support/docs",
-        icon: BookOpen,
-        permission: "support:docs",
-      },
-      {
-        label: "Video Tutorials",
-        href: "/admin/support/videos",
-        icon: Video,
-        permission: "support:videos",
-      },
-      {
-        label: "Community Forum",
-        href: "/admin/support/forum",
-        icon: MessageCircle,
-        permission: "support:forum",
-      },
-      {
-        label: "System Status",
-        href: "/admin/support/status",
-        icon: Activity,
-        permission: "support:status",
-      },
-    ],
-  },
-  {
-    id: "developer",
-    label: "Developer / Advanced",
-    items: [
-      {
-        label: "API & Webhooks",
-        href: "/admin/site/api",
-        icon: Code2,
-        permission: "system:api",
-      },
-      {
-        label: "Logs",
-        href: "/admin/site/logs",
-        icon: Server,
-        permission: "system:logs",
-      },
-      {
-        label: "Database Tools",
-        href: "/admin/developer/database",
-        icon: Database,
-        permission: "developer:database",
-      },
-      {
-        label: "Code Editor",
-        href: "/admin/developer/editor",
-        icon: Code2,
-        permission: "developer:code",
-      },
-      {
-        label: "Version Control",
-        href: "/admin/developer/git",
-        icon: GitBranch,
-        permission: "developer:git",
+        label: "Domains",
+        href: "/admin/domain",
+        icon: Globe,
+        permission: "content:read",
       },
     ],
   },
@@ -612,22 +280,18 @@ function Sidebar({
     return true;
   };
 
-  // Filter sections and items based on permissions
-  const filteredAccountSection = {
-    ...accountSection,
-    items: accountSection.items.filter(item => hasPermission(item.permission))
-  };
-
-  const filteredWebsiteSections = currentWebsiteSections.map(section => ({
-    ...section,
-    items: section.items.filter(item => hasPermission(item.permission))
-  })).filter(section => section.items.length > 0);
+  const filteredWebsiteSections = currentWebsiteSections
+    .map((section) => ({
+      ...section,
+      items: section.items.filter((item) => hasPermission(item.permission)),
+    }))
+    .filter((section) => section.items.length > 0);
 
   return (
     <TooltipProvider>
       <div
         className={cn(
-          "relative hidden border-r bg-background md:flex",
+          "relative hidden border-r bg-background border-2 h-screen md:flex",
           collapsed ? "w-[72px]" : "w-64"
         )}
       >
@@ -657,25 +321,16 @@ function Sidebar({
                 onValueChange={onWebsiteChange}
               >
                 <SelectTrigger
-                  className={cn(
-                    "h-9 w-full text-xs",
-                    collapsed && "px-2"
-                  )}
+                  className={cn("h-9 w-full text-xs", collapsed && "px-2")}
                 >
-                  {!collapsed && (
-                    <SelectValue placeholder="Select website" />
-                  )}
-                  {collapsed && (
-                    <Globe2 className="h-4 w-4" />
-                  )}
+                  {!collapsed && <SelectValue placeholder="Select website" />}
+                  {collapsed && <Globe2 className="h-4 w-4" />}
                 </SelectTrigger>
                 <SelectContent>
                   {websites.map((site) => (
-                    <SelectItem key={site.websiteId} value={site.websiteId}>
+                    <SelectItem key={site._id} value={site._id}>
                       <div className="flex flex-col">
-                        <span className="text-xs font-medium">
-                          {site.name}
-                        </span>
+                        <span className="text-xs font-medium">{site.name}</span>
                         <span className="text-[11px] text-muted-foreground">
                           {site.primaryDomain || site.systemSubdomain}
                         </span>
@@ -689,26 +344,18 @@ function Sidebar({
 
           <ScrollArea className="mt-2 flex-1 px-1">
             <nav className="flex flex-col gap-4 pb-8">
-              {/* Account section */}
-              <SidebarSection
-                section={filteredAccountSection}
-                pathname={pathname}
-                collapsed={collapsed}
-                hoveredId={hoveredId}
-                setHoveredId={setHoveredId}
-              />
-
               {/* Current website sections - only show if website is selected */}
-              {currentWebsite && filteredWebsiteSections.map((section) => (
-                <SidebarSection
-                  key={section.id}
-                  section={section}
-                  pathname={pathname}
-                  collapsed={collapsed}
-                  hoveredId={hoveredId}
-                  setHoveredId={setHoveredId}
-                />
-              ))}
+              {currentWebsite &&
+                filteredWebsiteSections.map((section) => (
+                  <SidebarSection
+                    key={section.id}
+                    section={section}
+                    pathname={pathname}
+                    collapsed={collapsed}
+                    hoveredId={hoveredId}
+                    setHoveredId={setHoveredId}
+                  />
+                ))}
             </nav>
           </ScrollArea>
 
@@ -755,7 +402,8 @@ function SidebarSection({
       <div className="space-y-1">
         {section.items.map((item) => {
           const Icon = item.icon;
-          const isActive = pathname === item.href || pathname?.startsWith(item.href + "/");
+          const isActive =
+            pathname === item.href || pathname?.startsWith(item.href + "/");
           const id = `${section.id}-${item.href}`;
           const showLabel = !collapsed;
 
@@ -784,7 +432,11 @@ function SidebarSection({
                             initial={{ opacity: 0, scale: 0.9 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.9 }}
-                            transition={{ type: "spring", stiffness: 260, damping: 25 }}
+                            transition={{
+                              type: "spring",
+                              stiffness: 260,
+                              damping: 25,
+                            }}
                           />
                         )}
                       </AnimatePresence>
@@ -794,7 +446,10 @@ function SidebarSection({
                       <div className="flex items-center gap-2 flex-1">
                         <span className="truncate">{item.label}</span>
                         {item.badge && (
-                          <Badge variant="secondary" className="text-[10px] px-1 py-0">
+                          <Badge
+                            variant="secondary"
+                            className="text-[10px] px-1 py-0"
+                          >
                             {item.badge}
                           </Badge>
                         )}
@@ -804,14 +459,120 @@ function SidebarSection({
                 </Link>
               </TooltipTrigger>
               {collapsed && (
-                <TooltipContent side="right">
-                  {item.label}
-                </TooltipContent>
+                <TooltipContent side="right">{item.label}</TooltipContent>
               )}
             </Tooltip>
           );
         })}
       </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Mobile Sidebar
+// ---------------------------------------------------------------------------
+
+type MobileSidebarProps = {
+  websites: Website[];
+  currentWebsite: Website | null;
+  user: User | null;
+  onWebsiteChange: (websiteId: string) => void;
+};
+
+function MobileSidebar({
+  websites,
+  currentWebsite,
+  user,
+  onWebsiteChange,
+}: MobileSidebarProps) {
+  const pathname = usePathname();
+
+  // Helper function to check if user has permission (simplified for now)
+  const hasPermission = (permission?: string) => {
+    if (!permission || !user) return true;
+    // TODO: Integrate with actual RBAC service
+    return true;
+  };
+
+  const filteredWebsiteSections = currentWebsiteSections
+    .map((section) => ({
+      ...section,
+      items: section.items.filter((item) => hasPermission(item.permission)),
+    }))
+    .filter((section) => section.items.length > 0);
+
+  return (
+    <div className="flex flex-col h-full">
+      {/* Website selector */}
+      {websites.length > 0 && (
+        <div className="p-3 border-b">
+          <Select
+            value={currentWebsite?.websiteId || ""}
+            onValueChange={onWebsiteChange}
+          >
+            <SelectTrigger className="h-9 w-full text-xs">
+              <SelectValue placeholder="Select website" />
+            </SelectTrigger>
+            <SelectContent>
+              {websites.map((site) => (
+                <SelectItem key={site._id} value={site._id}>
+                  <div className="flex flex-col">
+                    <span className="text-xs font-medium">{site.name}</span>
+                    <span className="text-[11px] text-muted-foreground">
+                      {site.primaryDomain || site.systemSubdomain}
+                    </span>
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+
+      <ScrollArea className="flex-1">
+        <nav className="flex flex-col gap-4 p-3 pb-8">
+          {/* Current website sections - only show if website is selected */}
+          {currentWebsite &&
+            filteredWebsiteSections.map((section) => (
+              <div key={section.id}>
+                <div className="mb-2 px-2 text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+                  {section.label}
+                </div>
+                <div className="space-y-1">
+                  {section.items.map((item) => {
+                    const Icon = item.icon;
+                    const isActive =
+                      pathname === item.href ||
+                      pathname?.startsWith(item.href + "/");
+
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        className={cn(
+                          "flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
+                          isActive && "bg-muted text-foreground font-medium"
+                        )}
+                      >
+                        <Icon className="h-4 w-4" />
+                        <span className="truncate">{item.label}</span>
+                        {item.badge && (
+                          <Badge
+                            variant="secondary"
+                            className="ml-auto text-[10px] px-1 py-0"
+                          >
+                            {item.badge}
+                          </Badge>
+                        )}
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+        </nav>
+      </ScrollArea>
     </div>
   );
 }
@@ -858,7 +619,11 @@ function Topbar({ currentWebsite, user, onToggleMobileSidebar }: TopbarProps) {
       </div>
 
       <div className="flex items-center gap-2">
-        <Button variant="outline" size="sm" className="hidden text-xs sm:inline-flex">
+        <Button
+          variant="outline"
+          size="sm"
+          className="hidden text-xs sm:inline-flex"
+        >
           <Search className="h-3 w-3 mr-1" />
           Search
         </Button>
@@ -894,7 +659,12 @@ function Topbar({ currentWebsite, user, onToggleMobileSidebar }: TopbarProps) {
             <DropdownMenuItem>Profile</DropdownMenuItem>
             <DropdownMenuItem>Account settings</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-destructive">Sign out</DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => signOut()}
+              className="text-destructive"
+            >
+              Sign out
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -917,7 +687,7 @@ export function AppShell({
   const [sidebarCollapsed, setSidebarCollapsed] = React.useState(false);
 
   return (
-    <div className="flex min-h-screen bg-background text-foreground">
+    <div className="flex min-h-screen bg-background text-foreground overflow-hidden">
       {/* Desktop sidebar */}
       <Sidebar
         websites={websites}
@@ -929,16 +699,14 @@ export function AppShell({
       />
 
       {/* Main area */}
-      <div className="flex min-h-screen flex-1 flex-col">
+      <div className="flex flex-1 min-h-screen flex-col overflow-hidden">
         <Topbar
           currentWebsite={currentWebsite}
           user={user}
           onToggleMobileSidebar={() => setMobileSidebarOpen(true)}
         />
-        <main className="flex-1 px-3 py-4 md:px-6 md:py-6">
-          <div className="mx-auto max-w-7xl">
-            {children}
-          </div>
+        <main className="flex-1 px-3 py-4 md:px-6 md:py-6 overflow-auto">
+          <div className="mx-auto max-w-7xl">{children}</div>
         </main>
       </div>
 
@@ -950,18 +718,15 @@ export function AppShell({
               Navigation
             </SheetTitle>
           </SheetHeader>
-          <div className="h-full">
-            <Sidebar
-              websites={websites}
-              currentWebsite={currentWebsite}
-              user={user}
-              onWebsiteChange={(websiteId) => {
-                onWebsiteChange(websiteId);
-                setMobileSidebarOpen(false);
-              }}
-              collapsed={false}
-            />
-          </div>
+          <MobileSidebar
+            websites={websites}
+            currentWebsite={currentWebsite}
+            user={user}
+            onWebsiteChange={(websiteId) => {
+              onWebsiteChange(websiteId);
+              setMobileSidebarOpen(false);
+            }}
+          />
         </SheetContent>
       </Sheet>
     </div>

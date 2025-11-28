@@ -54,7 +54,7 @@ export function withRBAC(options: RBACMiddlewareOptions) {
         options.action,
         {
           tenantId,
-          isTenantLevel: true,
+       
         }
       );
 
@@ -70,7 +70,11 @@ export function withRBAC(options: RBACMiddlewareOptions) {
         options.resource,
         undefined,
         { endpoint: request.url },
-        request.ip,
+        (
+          request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+          request.headers.get('x-real-ip') ||
+          undefined
+        ),
         request.headers.get('user-agent') || undefined
       );
 
