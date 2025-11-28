@@ -19,7 +19,7 @@ function SignInForm() {
     try {
       await signIn("credentials", {
         redirect: true,
-        callbackUrl: "/",
+        callbackUrl: "/admin",
         email,
         password,
         tenantSlug,
