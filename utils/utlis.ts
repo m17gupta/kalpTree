@@ -4,6 +4,6 @@ export const convertName = (name:string) => {
     const day = comp.getUTCDate()
     const month = comp.getUTCMonth()
     const year = comp.getUTCFullYear()
-    const final = `${name}_${day}_${month}_${year}_${timestamp}`
+    const final = `${day}-${month}-${year}-${timestamp}-${name}`
     return final
 }
