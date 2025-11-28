@@ -67,9 +67,23 @@ export default function MediaGalleryCMS() {
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if(!file) return;
+    if (!file) return;
 
-    const res = await fetch(`/api/media/s3upload?fileType=${file.type}&?fileName=${file.name}`)
+    const res = await fetch(
+      `/api/media/s3upload?fileType=${file.type}&fileName=${file.name}`
+    );
+    const { uploadUrl, fileUrl } = await res.json();
+
+    await fetch(uploadUrl, {
+      method: "PUT",
+      body: file,
+      headers: {
+        "Content-Type": file.type,
+      },
+    });
+
+    setPreview(fileUrl);
+    console.log(fileUrl);
   };
 
   const [newMedia, setNewMedia] = useState({
@@ -385,6 +399,16 @@ export default function MediaGalleryCMS() {
                 onChange={handleUpload}
                 className="w-full px-3 py-2 border rounded-lg"
               />
+
+              {preview && (
+                <div className="w-full">
+                  <img
+                    src={preview}
+                    alt="Preview"
+                    className="w-full h-48 object-cover rounded-lg border"
+                  />
+                </div>
+              )}
 
               <input
                 type="text"
