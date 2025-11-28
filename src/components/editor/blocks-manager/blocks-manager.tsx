@@ -209,16 +209,20 @@ if (block.content) {
     () => (
       <div className="grid grid-cols-2 gap-3 p-1 md:grid-cols-3">
         {filteredBlocks.length > 0 ? (
-          filteredBlocks.map((block) => (
-            <BlockGridItem
-              key={block.id}
-              block={block}
-              isSelected={selectedBlocks.includes(block.id)}
-              isFavorite={favoritesList.includes(block.id)}
-              onToggleSelection={toggleBlockSelection}
-              onToggleFavorite={toggleFavorite}
-            />
-          ))
+          filteredBlocks.map((block) => {
+            const b = block as BlockConfig;
+            return (
+              <BlockGridItem
+                key={b.id}
+                block={b}
+                isSelected={selectedBlocks.includes(b.id)}
+                isFavorite={favoritesList.includes(b.id)}
+                onToggleSelection={toggleBlockSelection}
+                onToggleFavorite={toggleFavorite}
+              />
+            );
+          })
+          
         ) : (
           <EmptyBlocksMessage />
         )}
@@ -237,20 +241,23 @@ if (block.content) {
   const renderListView = useCallback(
     () => (
       <div className="space-y-1.5 p-1">
-        {filteredBlocks.length > 0 ? (
-          filteredBlocks.map((block) => (
-            <BlockListItem
-              key={block.id}
-              block={block}
-              isSelected={selectedBlocks.includes(block.id)}
-              isFavorite={favoritesList.includes(block.id)}
-              onToggleSelection={toggleBlockSelection}
-              onToggleFavorite={toggleFavorite}
-            />
-          ))
-        ) : (
-          <EmptyBlocksMessage />
-        )}
+  {filteredBlocks.length > 0 ? (
+  filteredBlocks.map((block) => {
+    const b = block as BlockConfig;
+    return (
+      <BlockListItem
+        key={b.id}
+        block={b}
+        isSelected={selectedBlocks.includes(b.id)}
+        isFavorite={favoritesList.includes(b.id)}
+        onToggleSelection={toggleBlockSelection}
+        onToggleFavorite={toggleFavorite}
+      />
+    );
+  })
+) : (
+  <EmptyBlocksMessage />
+)}
       </div>
     ),
     [
