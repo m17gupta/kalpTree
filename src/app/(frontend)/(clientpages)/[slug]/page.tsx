@@ -3,11 +3,16 @@ import { headers } from "next/headers";
 const API_BASE_URL = process.env.NEXTAUTH_URL || "http://localhost:55803";
 
 export default async function PageTemplate({ params }: any) {
+
+ 
   const headersList = await headers();
+
   const host = headersList.get("host");
 
   const main = await fetch(`${API_BASE_URL}/api/domain/${host}`);
+    console.log("main---", main)
   const domainData = await main.json();
+    console.log("domainData---", domainData)
   const param = await params;
 
   const slugs = !param.hasOwnProperty("slug") ? "home" : param.slug;
@@ -18,20 +23,24 @@ export default async function PageTemplate({ params }: any) {
   }).toString();
 
   
-  console.log(query)
+  console.log("query ---->",query)
 
   if(!domainData.item){
     return <>404 Not Found</>
   }
   const res = await fetch(`${API_BASE_URL}/api/pages/websites?${query}`);
 
+  console.log("res-- website--", res)
   const t = await res.json();
-
+   console.log("t----->", t)
   const html = t.item.content;
-
+ 
+  const EditButton = (await import("../EditButton")).default;
   return (
     <div>
+     <EditButton pageData={t.item} />
       <div dangerouslySetInnerHTML={{ __html: html }} />
+     
     </div>
   );
 }
